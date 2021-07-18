@@ -67,3 +67,11 @@ git clone https://github.com/theforcer/dwc-docker/
 cd dwc-docker
 sudo docker-compose up -d
 ```
+
+Persistent data is stored in a Docker-managed volume. With a usual Docker installation, you should find the databases in ```/var/lib/docker/volumes/dwc_data/_data```.
+
+## Other tidbits
+
+- Some of the HTTP requests from Dolphin contain a duplicate "Host" Header for whatever reason. An up-to-date NGINX complains, logs this as an INFO error (does not show up by default in error_log) and does not proxy the request to the server. This could be solved via some rewrite magic, for now we are using an older version of NGINX.
+
+- Services running in containers on the localhost interface will not be able to communicate with other container services. Therefore these services now run on all interfaces, so the NGINX <--> server communication can take place.
