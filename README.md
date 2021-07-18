@@ -33,7 +33,7 @@ The following ports are optional:
 |----------|-------|----------------------------|
 | TCP      | 9003  | Dls1Server                 |
 | TCP      | 9009  | AdminPage                  |
-| TCP      | 9000  | RegisterPage               |
+| TCP      | 9998  | RegisterPage               |
 
 ## Network Setup - Clients
 
