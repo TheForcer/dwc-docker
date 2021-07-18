@@ -1,4 +1,4 @@
-FROM python2.7-slim
+FROM python:2.7-slim
 
 RUN apt-get update -y && \
     apt-get install -y --no-install-recommends git && \
