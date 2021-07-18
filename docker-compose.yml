@@ -1,0 +1,31 @@
+services:
+
+  nginx:
+    image: nginx:1.10.3
+    container_name: dwc_nginx
+    restart: unless-stopped
+    ports:
+      - 80:80
+    volumes:
+     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+
+  dwc:
+    build: .
+    container_name: dwc_server
+    restart: unless-stopped
+    ports:
+      - 8000:8000
+      - 9000:9000
+      - 9001:9001
+      - 27500:27500
+      - 28910:28910
+      - 29900:29900
+      - 29901:29901
+      - 29920:29920
+      - 27900/udp
+      - 27901/udp
+    volumes:
+      - data:/dwc/data
+
+volumes:
+  data:
