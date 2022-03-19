@@ -52,26 +52,28 @@ The following ports are optional:
 
 Every participating Dolphin client has to complete the following steps to be able to join a spoofed server.
 
-First up, every client systems needs the correct DNS records to be able to connect to your "fake" Nintendo WFC server. These can be provided by adding them to the hosts file of each client.
+First up, every client systems needs the correct DNS records to be able to connect to your "fake" Nintendo WFC server. These can be provided by adding them to the hosts file of each client. You can also use the "client_dns_modifier" script, which can be run as is within a Python environment or by using the provided executable.
+
+If you'd like, you can use PyInstaller to create your own executable: `pyinstaller --uac-admin --onefile --console client_dns_modifier.py`
 
 ```
-PUBLIC_IP		gamestats.gs.nintendowifi.net
-PUBLIC_IP		gamestats2.gs.nintendowifi.net
-PUBLIC_IP		gpcm.gs.nintendowifi.net
-PUBLIC_IP		gpsp.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.available.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.gamestats.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.gamestats2.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.master.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.ms19.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.natneg1.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.natneg2.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.natneg3.gs.nintendowifi.net
-PUBLIC_IP		mariokartwii.sake.gs.nintendowifi.net
-PUBLIC_IP		naswii.nintendowifi.net
-PUBLIC_IP		nas.nintendowifi.net
-PUBLIC_IP		nintendowifi.net
-PUBLIC_IP		wiimmfi.de
+SERVER_IP		gamestats.gs.nintendowifi.net
+SERVER_IP		gamestats2.gs.nintendowifi.net
+SERVER_IP		gpcm.gs.nintendowifi.net
+SERVER_IP		gpsp.gs.nintendowifi.net
+SERVER_IP		mariokartwii.available.gs.nintendowifi.net
+SERVER_IP		mariokartwii.gamestats.gs.nintendowifi.net
+SERVER_IP		mariokartwii.gamestats2.gs.nintendowifi.net
+SERVER_IP		mariokartwii.master.gs.nintendowifi.net
+SERVER_IP		mariokartwii.ms19.gs.nintendowifi.net
+SERVER_IP		mariokartwii.natneg1.gs.nintendowifi.net
+SERVER_IP		mariokartwii.natneg2.gs.nintendowifi.net
+SERVER_IP		mariokartwii.natneg3.gs.nintendowifi.net
+SERVER_IP		mariokartwii.sake.gs.nintendowifi.net
+SERVER_IP		naswii.nintendowifi.net
+SERVER_IP		nas.nintendowifi.net
+SERVER_IP		nintendowifi.net
+SERVER_IP		wiimmfi.de
 ```
 
 Also, the games you want to play need to connect via plain HTTP to the server, since we cannot spoof the SSL certificates for Nintendo domains. For Mario Kart Wii, this can be achieved by using a Gecko Cheat Code:
