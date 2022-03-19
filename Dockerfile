@@ -1,10 +1,11 @@
 FROM python:2.7-slim
 
+# Install requirements
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends git && \
+    apt-get install -y --no-install-recommends git gcc && \
     pip install twisted
 
-# Replacments to enable listening on all interfaces, also to put DBs in extra directory
+# Replacements to enable listening on all interfaces, also to put DBs in extra directory
 RUN git clone https://github.com/barronwaffles/dwc_network_server_emulator.git /dwc && \
     sed -i "s/127.0.0.1/0.0.0.0/g" /dwc/altwfc.cfg && \
     sed -i "s?gpcm.db?./data/gpcm.db?g" /dwc/gamespy/gs_database.py && \
