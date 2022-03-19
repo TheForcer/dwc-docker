@@ -2,7 +2,7 @@ FROM python:2.7-slim
 
 # Install requirements
 RUN apt-get update -y && \
-    apt-get install -y --no-install-recommends git gcc && \
+    apt-get install -y git gcc && \
     pip install twisted
 
 # Replacements to enable listening on all interfaces, also to put DBs in extra directory
