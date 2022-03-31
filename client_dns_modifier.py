@@ -1,6 +1,14 @@
 from python_hosts import Hosts, HostsEntry, is_ipv4
 from time import sleep
-import ctypes
+import ctypes, os
+
+
+def is_admin():
+    try:
+        admin = (os.getuid() == 0)
+    except AttributeError:
+        admin = ctypes.windll.shell32.IsUserAnAdmin() != 0
+    return admin
 
 # Hostnames we need to spoof
 wfc_hostnames = [
@@ -23,7 +31,7 @@ wfc_hostnames = [
 ]
 
 # Admin check
-if not ctypes.windll.shell32.IsUserAnAdmin():
+if not is_admin():
     print("No administrative privileges. Please restart as administrator!")
     sleep(5)
     exit()
