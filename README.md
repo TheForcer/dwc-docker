@@ -4,7 +4,7 @@ This repo provides a Docker setup, which enables you to run your own Multiplayer
 
 ## Requirements
 
-This has been successfully tested on x64 Ubuntu 20.04 and Debian 11.
+This has been successfully tested on x64 Ubuntu 20.04, Debian 11, Arch Linux x86_64 and Raspberry Pi OS x86
 
 ARM architecture (for Raspberry Pi, M1 Macs etc.) is also supported, but hasn't been tested yet.
 
