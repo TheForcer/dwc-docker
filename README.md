@@ -1,30 +1,35 @@
 # DWC Docker Deployment
 
-This repo provides a Docker setup, which enables you to run your own Multiplayer Server for several Nintendo Wii Games (Mario Kart Wii, SSBB, etc.).
+This repo provides a Docker setup that allows you to run your own multiplayer server for a number of Nintendo Wii games (most notably Mario Kart Wii).
 
 ## Requirements
 
-This has been successfully tested on x64 Ubuntu 20.04, Debian 11, Arch Linux x86_64 and Raspberry Pi OS x86
+As this setup builds the server container manually, any system running Docker should work fine.
 
-ARM architecture (for Raspberry Pi, M1 Macs etc.) is also supported, but hasn't been tested yet.
-
- - git - ```sudo apt install git```
- - Docker - ```sudo apt install docker.io```
- - Docker Compose - ```sudo apt install docker-compose```
+ - git - `sudo apt install git`
+ - Docker - `sudo apt install docker.io`
+ - Docker Compose - `sudo apt install docker-compose`
 
 ## Installation
 
 ```
 git clone https://github.com/theforcer/dwc-docker/
 cd dwc-docker
-sudo docker-compose up -d
-``` 
+```
 
-Persistent data (account data etc.) is stored in a Docker-managed volume. With a typical Docker installation, you should find the databases in ```/var/lib/docker/volumes/dwc_data/_data```.
+If you want to use a custom domain for your server, replace the nintendowifi.net appearances in the haproxy.cfg file with your domain name (e.g. `sed -i 's/nintendowifi.net/example.com/g' haproxy.cfg`) to your domain name. You will also need to patch the domain name into the game later (see network setup method 1).
+
+If you want to connect using spoofed nintendowifi.net records (network setup method 2), leave them as they are and start the server with
+
+```
+docker-compose up -d
+```
+
+Persistent data (account information, etc.) is stored in a Docker-managed volume. In a typical Docker installation, you should find the databases in `/var/lib/docker/volumes/dwc_data/_data`.
 
 ## Network Setup - Server
 
-Make sure that your server is reachable via the following ports:
+Make sure your server is accessible on the following ports:
 
 | Protocol | Port  | Service                    |
 |----------|-------|----------------------------|
@@ -46,15 +51,41 @@ The following ports are optional:
 |----------|-------|----------------------------|
 | TCP      | 9003  | Dls1Server                 |
 | TCP      | 9009  | AdminPage                  |
-| TCP      | 9998  | RegisterPage               |
+| TCP      | 9998  | RegisterPage               |^
+
+If you are using a custom domain, the correct DNS records for the subdomains must also point to your server's IP; see Method 2 for a list of required subdomains for Mario Kart Wii.
 
 ## Network Setup - Clients
 
-Every participating Dolphin client has to complete the following steps to be able to join a spoofed server.
+There are three ways to allow Dolphin clients to connect to your "fake" server.
 
-First up, every client systems needs the correct DNS records to be able to connect to your "fake" Nintendo WFC server. These can be provided by adding them to the hosts file of each client. You can also use the "client_dns_modifier" script, which can be run as is within a Python environment or by using the provided executable.
+The first is to patch the server domain in the game ISO that you use, the second is to manually change the DNS records for nintendowifi.net on each PC. Finally, you could create a custom DNS server for the PCs to use, but that would open a can of worms of its own.
 
-If you'd like, you can use PyInstaller to create your own executable: `pyinstaller --uac-admin --onefile --console client_dns_modifier.py`
+The following sections explain how to patch a Mario Kart ROM or make the local DNS changes using the hosts file.
+
+### Method 1: Creating a patched MKW ISO
+
+#### Preparation
+
+- Download the Wii ISO Toolset from https://wit.wiimm.de/wit/
+	- This can be used to pack and unpack Wii ISOs, file structures, WBFS etc.
+- Download the Wii SZS Toolset from https://szs.wiimm.de/
+	- This can be used to manipulate the game files directly.
+- Unzip all the tools in the appropriate folders.
+
+#### Patching
+
+- Move the game ISO to the bin directory inside the wit folder. Now extract the ISO with `\wit.exe extract 'MarioKartWii.iso' mkw`. This will create a folder called `mkw` containing the game files.
+- Locate the files `sys/main.dol` and `files/rel/StaticR.rel` and add them to the bin directory of the szs folder.
+- Now we patch the domain name with the command `.\wstrt.exe PATCH --https DOMAIN --domain example.com main.dol StaticR.rel`, using example.com as an example. This will also convert all HTTPS requests to plain HTTP.
+- The tool should indicate that both files have been successfully patched.
+- Now the two patched files can be copied back to their original location in the ROM folder (mkw).
+- The folder containing the game files can then be packed into an ISO with `.\wit.exe COPY mkw MarioKartWii_patched.iso`.
+- The ISO can now be used to play on your alternative server in Dolphin.
+
+### Method 2: Spoofing nintendowifi.net DNS records
+
+The code snippet below shows which name records need to be spoofed. You can add these manually to your DNS server, `/etc/hosts` or `C:\Windows\System32\drivers\etc\hosts` file. You can also automate this by using the "client_dns_modifier" script, which can be run as is within a Python environment or by using the supplied executable.
 
 ```
 SERVER_IP		gamestats.gs.nintendowifi.net
@@ -76,7 +107,7 @@ SERVER_IP		nintendowifi.net
 SERVER_IP		wiimmfi.de
 ```
 
-Also, the games you want to play need to connect via plain HTTP to the server, since we cannot spoof the SSL certificates for Nintendo domains. For Mario Kart Wii, this can be achieved by using a Gecko Cheat Code:
+Also, the games you want to play must connect to the server via plain HTTP, as we cannot spoof the SSL certificates for Nintendo's domains. For Mario Kart Wii, we can use a Gecko cheat code to patch HTTPS calls to HTTP:
 
 ~~~
 c0000000 0000001d
@@ -114,8 +145,6 @@ f0000000 00000000
 
 ## Other tidbits
 
-- Some of the HTTP requests from Dolphin contain a duplicate "Host" Header for whatever reason. An up-to-date NGINX complains, logs this as an INFO error (does not show up by default in error_log) and does not proxy the request to the server (Similar behaviour for other proxies such as Caddy as well). This is why HAProxy is being used.
-
-- Services running in containers on the localhost interface will not be able to communicate with other container services. Therefore these services now run on all interfaces, so the HAProxy <--> server communication can take place.
-
-- This also works for Custom Track Mario Kart Wii Distributions. The setup has been successfully tested with 7 players and [Mario Kart Fun 2013-10](https://wiki.tockdom.com/wiki/Wiimms_Mario_Kart_Fun_2013-10)
+- Some of the HTTP requests from Dolphin contain a duplicate "Host" header for some reason. A recent NGINX complains, logs this as an INFO error (not shown in error_log by default) and does not proxy the request to the server (similar behaviour for other proxies like Caddy as well). This is why HAProxy is used.
+- Services running in containers on the localhost interface will not be able to communicate with other container services. So these services are now running on all interfaces so that the HAProxy <--> server communication can take place.
+- This also works for Custom Track Mario Kart Wii distributions. The setup has been successfully tested with 7 players and [Mario Kart Fun 2013-10](https://wiki.tockdom.com/wiki/Wiimms_Mario_Kart_Fun_2013-10)
